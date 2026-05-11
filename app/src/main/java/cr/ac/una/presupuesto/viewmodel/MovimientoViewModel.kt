@@ -1,21 +1,31 @@
 package cr.ac.una.presupuesto.viewmodel
 
+import android.app.Application
 import android.net.Uri
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import cr.ac.una.presupuesto.data.model.Movimiento
 import cr.ac.una.presupuesto.data.repository.MovimientoRepository
+import cr.ac.una.presupuesto.util.LocationHelper
 import cr.ac.una.presupuesto.viewmodel.states.MovimientoUIState
 
-class MovimientoViewModel : ViewModel() {
+class MovimientoViewModel(application: Application) : AndroidViewModel(application) {
+
     private val repo = MovimientoRepository()
     var listaMovimientos = mutableStateListOf<Movimiento>()
 
     var uiState by mutableStateOf(MovimientoUIState())
         private set
+
+    val balanceTotal by derivedStateOf {
+        listaMovimientos.sumOf { mov ->
+            if (mov.tipo == "Crédito") mov.monto else -mov.monto
+        }
+    }
 
     init {
         cargarMovimientos()
@@ -30,7 +40,6 @@ class MovimientoViewModel : ViewModel() {
         }
     }
 
-    // Función solicitada para actualizar la imagen en el estado
     fun actualizarImagen(uri: Uri?) {
         uiState = uiState.copy(imagenUri = uri)
     }
@@ -87,25 +96,29 @@ class MovimientoViewModel : ViewModel() {
 
     fun guardarMovimiento() {
         if (validarCampos()) {
-            val movimiento = uiState.movimientoSeleccionado?.copy(
-                monto = uiState.monto.toDouble(),
-                tipo = uiState.tipo,
-                fecha = uiState.fecha
-            ) ?: Movimiento(
-                monto = uiState.monto.toDouble(),
-                tipo = uiState.tipo,
-                fecha = uiState.fecha
-            )
+            LocationHelper.obtenerUbicacion(getApplication()) { latitud, longitud ->
+                val movimiento = uiState.movimientoSeleccionado?.copy(
+                    monto = uiState.monto.toDouble(),
+                    tipo = uiState.tipo,
+                    fecha = uiState.fecha,
+                    latitud = latitud ?: uiState.movimientoSeleccionado?.latitud,
+                    longitud = longitud ?: uiState.movimientoSeleccionado?.longitud
+                ) ?: Movimiento(
+                    monto = uiState.monto.toDouble(),
+                    tipo = uiState.tipo,
+                    fecha = uiState.fecha,
+                    latitud = latitud,
+                    longitud = longitud
+                )
 
-            // Si hay una nueva imagenUri, el repo se encarga de subirla
-            // Si no, guarda el movimiento con la imagenUrl que ya tenía (o vacía)
-            repo.guardarMovimientoConImagen(movimiento, uiState.imagenUri)
-            cerrarDialog()
+                repo.guardarMovimientoConImagen(movimiento, uiState.imagenUri)
+                cerrarDialog()
+            }
         }
     }
 
     fun actualizarConfirmado() {
-        guardarMovimiento() // Reutilizamos la lógica de guardado que maneja edición
+        guardarMovimiento()
         uiState = uiState.copy(showUpdateConfirmDialog = false)
     }
 
