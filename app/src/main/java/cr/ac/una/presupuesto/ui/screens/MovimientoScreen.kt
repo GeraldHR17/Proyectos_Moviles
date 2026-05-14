@@ -14,6 +14,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import cr.ac.una.presupuesto.ui.components.MovimientoCard
 import cr.ac.una.presupuesto.viewmodel.MovimientoViewModel
@@ -23,6 +27,18 @@ import cr.ac.una.presupuesto.ui.components.BalanceCard
 fun MovimientoScreen(
     viewModel: MovimientoViewModel
 ) {
+
+    var mapaCords by remember { mutableStateOf<Pair <Double, Double>?>(null) }
+    if(mapaCords !=null){
+        MapaScreen(
+        mapaCords!!.first,
+        mapaCords!!.second,
+        {mapaCords=null})
+        return
+
+
+    }
+
     val uiState = viewModel.uiState
 
     Scaffold(
@@ -48,7 +64,11 @@ fun MovimientoScreen(
                     MovimientoCard(
                         movimiento = mov,
                         onEdit = { viewModel.abrirDialog(it) },
-                        onDelete = { viewModel.confirmarEliminar(it) }
+                        onDelete = { viewModel.confirmarEliminar(it) },
+                        onOpenMap = { lat, lng ->
+                            mapaCords = lat to lng
+                        }
+
                     )
                 }
             }

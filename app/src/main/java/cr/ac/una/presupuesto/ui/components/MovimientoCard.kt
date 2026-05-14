@@ -12,18 +12,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import cr.ac.una.presupuesto.data.model.Movimiento
+import cr.ac.una.presupuesto.util.MapHelper
 
 @Composable
 fun MovimientoCard(
     movimiento: Movimiento,
     onEdit: (Movimiento) -> Unit,
-    onDelete: (Movimiento) -> Unit
+    onDelete: (Movimiento) -> Unit,
+    onOpenMap: (Double, Double) -> Unit
 ) {
+
+    val context =LocalContext.current
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -90,6 +96,16 @@ fun MovimientoCard(
                     fontWeight = FontWeight.SemiBold
                 )
             }
+
+            IconButton(
+                onClick = {
+                    movimiento.latitud?.let { lat ->
+                        movimiento.longitud?.let { lng ->
+                            onOpenMap(lat, lng)
+                        }
+                    }
+                }
+            ) { }
 
             IconButton(onClick = { onDelete(movimiento) }) {
                 Icon(
