@@ -35,9 +35,8 @@ fun MovimientoDialog(
     val uiState = viewModel.uiState
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
-    val opcionesTipo = listOf("Ingreso", "Egreso")
+    val opcionesTipo = listOf("Crédito", "Débito")
 
-    // DatePicker refactorizado para usar DatePickerDialog estándar y evitar ExperimentalMaterial3Api
     val calendar = Calendar.getInstance()
     val datePickerDialog = DatePickerDialog(
         context,
@@ -60,7 +59,25 @@ fun MovimientoDialog(
         }
     }
 
+    // Launcher para permiso de cámara
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            val uri = crearUriImage(context)
+            localUri = uri
+            cameraLauncher.launch(uri)
+        }
+    }
 
+    // Launcher para permisos de ubicación
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        // No importa si acepta o no, llamamos a guardarMovimiento. 
+        // El LocationHelper se encargará de verificar el permiso antes de pedir la ubicación.
+        viewModel.guardarMovimiento()
+    }
 
     AlertDialog(
         onDismissRequest = { viewModel.cerrarDialog() },
@@ -94,7 +111,6 @@ fun MovimientoDialog(
                     shape = RoundedCornerShape(12.dp)
                 )
 
-                // Dropdown refactorizado para evitar ExperimentalMaterial3Api
                 Box(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = uiState.tipo,
@@ -164,9 +180,7 @@ fun MovimientoDialog(
 
                 Button(
                     onClick = {
-                        val uri = crearUriImage(context)
-                        localUri = uri
-                        cameraLauncher.launch(uri)
+                        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
@@ -176,7 +190,6 @@ fun MovimientoDialog(
                     Text("Tomar foto")
                 }
 
-                // Vista previa de la imagen (local o remota)
                 val imageSource = uiState.imagenUri ?: uiState.movimientoSeleccionado?.imagenUrl
                 if (imageSource != null) {
                     Box(
@@ -203,7 +216,14 @@ fun MovimientoDialog(
         },
         confirmButton = {
             Button(
-                onClick = { viewModel.guardarMovimiento() },
+                onClick = {
+                    locationPermissionLauncher.launch(
+                        arrayOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        )
+                    )
+                },
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(if (uiState.movimientoSeleccionado == null) "Guardar" else "Actualizar")

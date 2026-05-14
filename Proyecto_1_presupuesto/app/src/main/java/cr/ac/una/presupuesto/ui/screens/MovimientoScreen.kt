@@ -19,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import cr.ac.una.presupuesto.ui.components.BalanceCard
 import cr.ac.una.presupuesto.ui.components.MovimientoCard
 import cr.ac.una.presupuesto.viewmodel.MovimientoViewModel
 import cr.ac.una.presupuesto.ui.components.BalanceCard

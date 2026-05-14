@@ -1,10 +1,13 @@
 package cr.ac.una.presupuesto.ui.components
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -15,20 +18,16 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import cr.ac.una.presupuesto.data.model.Movimiento
-import cr.ac.una.presupuesto.util.MapHelper
 
 @Composable
 fun MovimientoCard(
     movimiento: Movimiento,
     onEdit: (Movimiento) -> Unit,
-    onDelete: (Movimiento) -> Unit,
-    onOpenMap: (Double, Double) -> Unit
+    onDelete: (Movimiento) -> Unit
 ) {
-
-    val context =LocalContext.current
+    val context = LocalContext.current
 
     Card(
         modifier = Modifier
@@ -47,18 +46,17 @@ fun MovimientoCard(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Imagen del movimiento
+            // Imagen o Placeholder
             if (!movimiento.imagenUrl.isNullOrEmpty()) {
                 AsyncImage(
                     model = movimiento.imagenUrl,
-                    contentDescription = "Imagen del movimiento",
+                    contentDescription = "Imagen",
                     modifier = Modifier
                         .size(60.dp)
                         .clip(RoundedCornerShape(8.dp)),
                     contentScale = ContentScale.Crop
                 )
             } else {
-                // Placeholder o icono por defecto
                 Surface(
                     modifier = Modifier.size(60.dp),
                     shape = RoundedCornerShape(8.dp),
@@ -66,7 +64,7 @@ fun MovimientoCard(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(
-                            text = if (movimiento.tipo == "Ingreso") "+" else "-",
+                            text = if (movimiento.tipo == "Crédito") "+" else "-",
                             style = MaterialTheme.typography.headlineSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
@@ -76,14 +74,13 @@ fun MovimientoCard(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            // Información del movimiento
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = movimiento.tipo,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = if (movimiento.tipo == "Ingreso") Color(0xFF4CAF50) else Color(0xFFF44336)
+                    color = if (movimiento.tipo == "Crédito") Color(0xFF4CAF50) else Color(0xFFF44336)
                 )
                 Text(
                     text = movimiento.fecha,
@@ -97,22 +94,31 @@ fun MovimientoCard(
                 )
             }
 
-            IconButton(
-                onClick = {
-                    movimiento.latitud?.let { lat ->
-                        movimiento.longitud?.let { lng ->
-                            onOpenMap(lat, lng)
-                        }
+            // Botones de acción
+            Row {
+                // Icono de ubicación (solo si tiene coordenadas)
+                if (movimiento.latitud != null && movimiento.longitud != null) {
+                    IconButton(onClick = {
+                        val gmmIntentUri = Uri.parse("geo:${movimiento.latitud},${movimiento.longitud}?q=${movimiento.latitud},${movimiento.longitud}")
+                        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                        mapIntent.setPackage("com.google.android.apps.maps")
+                        context.startActivity(mapIntent)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = "Ver ubicación",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
-            ) { }
 
-            IconButton(onClick = { onDelete(movimiento) }) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Eliminar",
-                    tint = MaterialTheme.colorScheme.error
-                )
+                IconButton(onClick = { onDelete(movimiento) }) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Eliminar",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
     }
