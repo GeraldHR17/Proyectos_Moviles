@@ -1,7 +1,5 @@
 package cr.ac.una.presupuesto.ui.components
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -25,10 +22,9 @@ import cr.ac.una.presupuesto.data.model.Movimiento
 fun MovimientoCard(
     movimiento: Movimiento,
     onEdit: (Movimiento) -> Unit,
-    onDelete: (Movimiento) -> Unit
+    onDelete: (Movimiento) -> Unit,
+    onVerMapa: (Double, Double) -> Unit
 ) {
-    val context = LocalContext.current
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -99,10 +95,7 @@ fun MovimientoCard(
                 // Icono de ubicación (solo si tiene coordenadas)
                 if (movimiento.latitud != null && movimiento.longitud != null) {
                     IconButton(onClick = {
-                        val gmmIntentUri = Uri.parse("geo:${movimiento.latitud},${movimiento.longitud}?q=${movimiento.latitud},${movimiento.longitud}")
-                        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
-                        mapIntent.setPackage("com.google.android.apps.maps")
-                        context.startActivity(mapIntent)
+                        onVerMapa(movimiento.latitud!!, movimiento.longitud!!)
                     }) {
                         Icon(
                             imageVector = Icons.Default.LocationOn,

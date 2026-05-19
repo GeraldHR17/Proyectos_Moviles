@@ -29,16 +29,15 @@ fun MovimientoScreen(
     viewModel: MovimientoViewModel
 ) {
 
-    var mapaCords by remember { mutableStateOf<Pair <Double, Double>?>(null) }
-    if(mapaCords !=null){
-        MapaScreen(
+   var mapaCords by remember { mutableStateOf<Pair <Double, Double>?>(null) }
+    if(mapaCords != null){
+        MapaScreen (
         mapaCords!!.first,
         mapaCords!!.second,
         {mapaCords=null})
         return
-
-
     }
+
 
     val uiState = viewModel.uiState
 
@@ -65,11 +64,10 @@ fun MovimientoScreen(
                     MovimientoCard(
                         movimiento = mov,
                         onEdit = { viewModel.abrirDialog(it) },
-                        onDelete = { viewModel.confirmarEliminar(it) },
-                        onOpenMap = { lat, lng ->
-                            mapaCords = lat to lng
+                        onDelete = { viewModel.confirmarEliminar(it)},
+                        onVerMapa = {lat,long ->
+                            mapaCords = Pair(lat,long)
                         }
-
                     )
                 }
             }

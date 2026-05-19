@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="firebase_database_url" translatable="false">https://moviles-gerald-default-rtdb.firebaseio.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">457411965515</string>
+    <string name="google_api_key" translatable="false">AIzaSyBBjEvIl6f6RyyUf2PcCEJbCJ1i9aEMZ00</string>
+    <string name="google_app_id" translatable="false">1:457411965515:android:743d3829434d66351913ce</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyBBjEvIl6f6RyyUf2PcCEJbCJ1i9aEMZ00</string>
+    <string name="google_storage_bucket" translatable="false">moviles-gerald.firebasestorage.app</string>
+    <string name="project_id" translatable="false">moviles-gerald</string>
+</resources>

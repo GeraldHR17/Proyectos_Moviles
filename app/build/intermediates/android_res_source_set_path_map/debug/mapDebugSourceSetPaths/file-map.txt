@@ -1,0 +1,8 @@
+cr.ac.una.presupuesto.app-pngs-0 C:\cuarto ciclo\kotlin\gitMoviles\app\build\generated\res\pngs\debug
+cr.ac.una.presupuesto.app-res-1 C:\cuarto ciclo\kotlin\gitMoviles\app\build\generated\res\processDebugGoogleServices
+cr.ac.una.presupuesto.app-updated_navigation_xml-2 C:\cuarto ciclo\kotlin\gitMoviles\app\build\generated\updated_navigation_xml\debug
+cr.ac.una.presupuesto.app-packageDebugResources-3 C:\cuarto ciclo\kotlin\gitMoviles\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+cr.ac.una.presupuesto.app-packageDebugResources-4 C:\cuarto ciclo\kotlin\gitMoviles\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+cr.ac.una.presupuesto.app-debug-5 C:\cuarto ciclo\kotlin\gitMoviles\app\build\intermediates\merged_res\debug\mergeDebugResources
+cr.ac.una.presupuesto.app-debug-6 C:\cuarto ciclo\kotlin\gitMoviles\app\src\debug\res
+cr.ac.una.presupuesto.app-main-7 C:\cuarto ciclo\kotlin\gitMoviles\app\src\main\res

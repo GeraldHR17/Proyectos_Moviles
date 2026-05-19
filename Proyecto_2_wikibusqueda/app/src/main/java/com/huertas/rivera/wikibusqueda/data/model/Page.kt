@@ -1,9 +1,14 @@
 package com.huertas.rivera.wikibusqueda.data.model
 
+import com.google.gson.annotations.SerializedName
+
 data class Page(
-    val id: Int,
-    val key: String,
-    val title: String,
-    val description: String?,
-    val thumbnail: Thumbnail?
+    @SerializedName("id") val id: Long? = null,
+    @SerializedName("key") val key: String? = null,
+    @SerializedName("title") val title: String? = null,
+    @SerializedName("description") val description: String? = null,
+    @SerializedName("excerpt")
+    val excerpt: String? = null,
+    @SerializedName("thumbnail") val thumbnail: Thumbnail? = null, // Mapeo del objeto nativo del JSON
+    val imageUrl: String? = null // Campo personalizado que llenará tu repositorio
 )
