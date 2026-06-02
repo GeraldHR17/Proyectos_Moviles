@@ -12,12 +12,6 @@ object RetrofitInstance {
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.HEADERS
     }
-
-    /**
-     * Wikipedia REQUIERE identificación clara (User-Agent).
-     * Sin esto, el servidor responde con error 403 Forbidden.
-     * Usamos un User-Agent siguiendo las recomendaciones de Wikimedia.
-     */
     private val client = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
         .addInterceptor { chain ->

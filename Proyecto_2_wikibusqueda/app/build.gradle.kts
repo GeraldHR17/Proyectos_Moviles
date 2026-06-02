@@ -1,6 +1,10 @@
 plugins {
     alias(libs.plugins.android.application)
+
     alias(libs.plugins.kotlin.compose)
+
+    //librerias room
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -40,6 +44,13 @@ dependencies {
     implementation("com.airbnb.android:lottie-compose:6.4.0")
     // Iconos extendidos para el estilo medieval (Escudos, Dragones, etc.)
     implementation("androidx.compose.material:material-icons-extended")
+
+
+    // librerias room y viewmodel
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

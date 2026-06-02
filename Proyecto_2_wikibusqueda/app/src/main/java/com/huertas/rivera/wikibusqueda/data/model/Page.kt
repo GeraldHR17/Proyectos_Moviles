@@ -9,6 +9,6 @@ data class Page(
     @SerializedName("description") val description: String? = null,
     @SerializedName("excerpt")
     val excerpt: String? = null,
-    @SerializedName("thumbnail") val thumbnail: Thumbnail? = null, // Mapeo del objeto nativo del JSON
-    val imageUrl: String? = null // Campo personalizado que llenará tu repositorio
+    @SerializedName("thumbnail") val thumbnail: Thumbnail? = null,
+    val imageUrl: String? = null
 )

@@ -9,26 +9,14 @@ import com.huertas.rivera.wikibusqueda.data.model.Page
 @Composable
 fun ArticleList(
     articles: List<Page>,
-    onArticleClick: (String) -> Unit,
-    onArticleLongClick: (Page) -> Unit,
+    onArticleClick: (String, String, String) -> Unit, // Key, Titulo, Descripcion
     modifier: Modifier = Modifier
 ) {
-
     LazyColumn(modifier = modifier) {
-
         items(articles) { article ->
-
             ArticleCard(
-
                 page = article,
-
-                onClick = {
-                    onArticleClick(article.key ?: "")
-                },
-
-                onLongClick = {
-                    onArticleLongClick(article)
-                }
+                onClick = onArticleClick
             )
         }
     }
