@@ -11,8 +11,6 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,20 +32,24 @@ fun ArticleScreen(
     viewModel: WikiViewModel,
     onBackClick: () -> Unit
 ) {
-    // 1. Registro automático de consulta (Persistencia reintegrada)
-    LaunchedEffect(articleKey) {
-        viewModel.registrarConsulta(titulo = articleTitle, key = articleKey)
-    }
-
-    // 2. Estados reactivos desde la base de datos (Room + Flow)
-    val cantidadConsultas by viewModel.getCantidadConsultas(articleKey).collectAsState(initial = 0)
-    val isFavorito by viewModel.isFavorito(articleKey).collectAsState(initial = false)
-    val consultas by viewModel.getConsultasByKey(articleKey).collectAsStateWithLifecycle(initialValue = emptyList())
-
+    // Un único punto de verdad — todo el estado viene del UiState
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var mostrarHistorial by remember { mutableStateOf(false) }
 
+    // Registra la consulta y carga el estado centralizado al abrir el artículo
+    LaunchedEffect(articleKey) {
+        viewModel.registrarConsulta(titulo = articleTitle, key = articleKey)
+        viewModel.cargarEstadoArticulo(articleKey)
+    }
+
+    // Limpia el estado del artículo del UiState al salir de la pantalla
+    DisposableEffect(articleKey) {
+        onDispose { viewModel.limpiarEstadoArticulo() }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
-        // Top Bar Estable (Surface + Row)
+
+        // ── Top Bar ──────────────────────────────────────────────────────────
         Surface(
             tonalElevation = 4.dp,
             modifier = Modifier.fillMaxWidth()
@@ -75,7 +77,7 @@ fun ArticleScreen(
                         modifier = Modifier.weight(1f)
                     )
 
-                    // Lógica de Favoritos: Interactúa con el ViewModel
+                    // Favorito — lee desde uiState.isFavorito
                     IconButton(onClick = {
                         viewModel.toggleFavorito(
                             titulo = articleTitle,
@@ -84,9 +86,18 @@ fun ArticleScreen(
                         )
                     }) {
                         Icon(
-                            imageVector = if (isFavorito) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                            contentDescription = if (isFavorito) "Quitar de favoritos" else "Agregar a favoritos",
-                            tint = if (isFavorito) Color.Red else MaterialTheme.colorScheme.onSurface
+                            imageVector = if (uiState.isFavorito)
+                                Icons.Default.Favorite
+                            else
+                                Icons.Default.FavoriteBorder,
+                            contentDescription = if (uiState.isFavorito)
+                                "Quitar de favoritos"
+                            else
+                                "Agregar a favoritos",
+                            tint = if (uiState.isFavorito)
+                                Color.Red
+                            else
+                                MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -98,15 +109,15 @@ fun ArticleScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    // Contador — lee desde uiState.visitCount
                     Text(
-                        text = "Consultas realizadas: $cantidadConsultas",
+                        text = "Consultas realizadas: ${uiState.visitCount}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    // Botón para ver el historial de este artículo
                     Button(onClick = { mostrarHistorial = true }) {
                         Text("Ver Detalle")
                     }
@@ -114,7 +125,7 @@ fun ArticleScreen(
             }
         }
 
-        // Visor de contenido estable (WebView)
+        // ── WebView ──────────────────────────────────────────────────────────
         AndroidView(
             factory = { context ->
                 WebView(context).apply {
@@ -128,11 +139,13 @@ fun ArticleScreen(
                     loadUrl(Constants.ARTICLE_URL + articleKey)
                 }
             },
-            modifier = Modifier.weight(1f).fillMaxWidth()
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
         )
     }
 
-    // 3. Historial de consultas utilizando Dialog (Estable, no requiere @OptIn)
+    // ── Historial de consultas ────────────────────────────────────────────────
     if (mostrarHistorial) {
         Dialog(
             onDismissRequest = { mostrarHistorial = false },
@@ -158,7 +171,10 @@ fun ArticleScreen(
                             modifier = Modifier.weight(1f)
                         )
                         IconButton(onClick = { mostrarHistorial = false }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Cerrar")
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Cerrar"
+                            )
                         }
                     }
 
@@ -172,8 +188,12 @@ fun ArticleScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    if (consultas.isEmpty()) {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    // Lista — lee desde uiState.consultas
+                    if (uiState.consultas.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Text(text = "No hay consultas registradas.")
                         }
                     } else {
@@ -181,17 +201,17 @@ fun ArticleScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            items(consultas) { consulta ->
-                                ElevatedCard(
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
+                            items(uiState.consultas) { consulta ->
+                                ElevatedCard(modifier = Modifier.fillMaxWidth()) {
                                     Column(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(16.dp)
                                     ) {
-                                        val fecha = SimpleDateFormat("dd/MM/yyyy hh:mm:ss a", Locale.getDefault())
-                                            .format(Date(consulta.fechaConsulta))
+                                        val fecha = SimpleDateFormat(
+                                            "dd/MM/yyyy hh:mm:ss a",
+                                            Locale.getDefault()
+                                        ).format(Date(consulta.fechaConsulta))
                                         Text(
                                             text = fecha,
                                             style = MaterialTheme.typography.bodyLarge

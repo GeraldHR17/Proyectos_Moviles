@@ -77,6 +77,8 @@ class WikiViewModel(application: Application) : AndroidViewModel(application) {
                 articles = articlesFound,
                 isLoading = false
             )
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e  // Siempre re-lanzar CancellationException, es parte del ciclo de vida de coroutines
         } catch (e: Exception) {
             Log.e("WikiViewModel", "Fallo en la petición a Wikipedia", e)
             _uiState.value = _uiState.value.copy(
@@ -139,4 +141,35 @@ class WikiViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getConsultasByKey(key: String): Flow<List<ArticuloConsulta>> =
         dao.getConsultasByKey(key)
+
+    fun cargarEstadoArticulo(key: String) {
+        viewModelScope.launch {
+            // Lanzamos los tres flows en paralelo y actualizamos el UiState
+            launch {
+                getCantidadConsultas(key).collect { count ->
+                    _uiState.value = _uiState.value.copy(visitCount = count)
+                }
+            }
+            launch {
+                isFavorito(key).collect { fav ->
+                    _uiState.value = _uiState.value.copy(isFavorito = fav)
+                }
+            }
+            launch {
+                getConsultasByKey(key).collect { lista ->
+                    _uiState.value = _uiState.value.copy(consultas = lista)
+                }
+            }
+        }
+    }
+
+    fun limpiarEstadoArticulo() {
+        _uiState.value = _uiState.value.copy(
+            visitCount = 0,
+            isFavorito = false,
+            consultas = emptyList()
+        )
+    }
 }
+
+

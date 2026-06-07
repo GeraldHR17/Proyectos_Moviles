@@ -10,13 +10,15 @@ import com.huertas.rivera.wikibusqueda.data.model.Page
 fun ArticleList(
     articles: List<Page>,
     onArticleClick: (String, String, String) -> Unit, // Key, Titulo, Descripcion
+    onArticleLongClick: (Page) -> Unit, // Añadido para la vista previa
     modifier: Modifier = Modifier
 ) {
     LazyColumn(modifier = modifier) {
         items(articles) { article ->
             ArticleCard(
                 page = article,
-                onClick = onArticleClick
+                onClick = onArticleClick,
+                onLongClick = { onArticleLongClick(article) }
             )
         }
     }

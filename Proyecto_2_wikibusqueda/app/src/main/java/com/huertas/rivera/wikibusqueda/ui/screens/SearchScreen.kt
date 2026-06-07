@@ -65,7 +65,7 @@ fun SearchScreen(
 
         if (uiState.articles.isNotEmpty()) {
             Text(
-                text = "Toca un artículo para ver más",
+                text = "Manten presionado un artículo para ver una vista previa",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 4.dp),
@@ -98,6 +98,9 @@ fun SearchScreen(
                         articles = uiState.articles,
                         onArticleClick = { key, title, desc ->
                             onArticleClick(key, title, desc)
+                        },
+                        onArticleLongClick = { article ->       // ← esto es lo que falta
+                            wikiViewModel.showPreview(article)
                         },
                         modifier = Modifier.fillMaxSize()
                     )
